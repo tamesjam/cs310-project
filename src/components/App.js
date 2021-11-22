@@ -86,7 +86,6 @@ class App extends Component {
       loading: true,
       list: [],
       credentials_list: [],
-      transactions_list: []
     }
 
     this.pushParts = this.pushParts.bind(this);
