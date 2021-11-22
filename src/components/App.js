@@ -85,6 +85,8 @@ class App extends Component {
       count: 0,
       loading: true,
       list: [],
+      credentials_list: [],
+      lol: []
     }
 
     this.pushParts = this.pushParts.bind(this);
