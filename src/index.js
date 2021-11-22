@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import 'bootstrap/dist/css/bootstrap.css'
 import App from './components/App';
 import * as serviceWorker from './serviceWorker';
+import Web3 from 'web3';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
