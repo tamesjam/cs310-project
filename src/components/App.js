@@ -28,15 +28,33 @@ class App extends Component {
 
   async loadBlockchainData() {
       // web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'));
-    web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+    // web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+    web3 = new Web3(window.ethereum);
+    var self = this;
+    var owned_cars = 0;
     
     // Set Account
-    const accounts = await web3.eth.getAccounts();
-    web3.eth.defaultAccount = accounts[0];
-    this.setState({ account: this.state.account });
+    window.ethereum.on('accountsChanged', function (accounts) {
+      web3.eth.defaultAccount = accounts[0];
+      console.log(web3.eth.defaultAccount);
+      self.setState({ account: web3.eth.defaultAccount });
+
+      // Set balance for this account
+      // var balance = await web3.eth.getBalance(this.state.account) / 10**18;
+      // this.setState({ balance: balance });
+    })
+
+    // const accounts = await web3.eth.getAccounts();
+    // web3.eth.defaultAccount = accounts[0];
+    // console.log(web3.eth.defaultAccount);
+    // this.setState({ account: accounts[0] });
+
+    // const accounts = await web3.eth.getAccounts();
+    // web3.eth.defaultAccount = accounts[0];
+    // this.setState({ account: this.state.account });
 
 
-    // Set balance for this account
+    // // Set balance for this account
     var balance = await web3.eth.getBalance(this.state.account) / 10**18;
     this.setState({ balance: balance });
 
@@ -51,11 +69,20 @@ class App extends Component {
     for(var i = 1; i <= total_count; i++) {
       const list_data = await autoBit.methods.parts_mapping(i).call();
       const credentials_data = await autoBit.methods.creds_mapping(i).call();
+      const insurance_array = await autoBit.methods.getInsuranceArray(i).call();
+      console.log(insurance_array);
       if(list_data.wheel_size != 0) {
         this.setState({
           list: [...this.state.list, list_data],
-          credentials_list: [...this.state.credentials_list, credentials_data]
-        })
+          credentials_list: [...this.state.credentials_list, insurance_array]
+        });
+        if(insurance_array.manufacturer.toString() == this.state.account) {
+          this.setState({ 
+            owned_parts: [...this.state.owned_parts, list_data],
+            owned_credentials: [...this.state.owned_credentials, insurance_array]
+          });
+          this.setState({ owned_count: ++owned_cars });
+        }
       }
     }
 
@@ -77,15 +104,18 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      account: '0xb612C0ED27fe5d189f87eae4dcC880766F090D51',
-      contractAbi: [{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"creds_array_mapping","outputs":[{"name":"id","type":"uint256"},{"name":"manufacturer","type":"string"},{"name":"dealership","type":"string"},{"name":"customer","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"parts_mapping","outputs":[{"name":"id","type":"uint256"},{"name":"car_name","type":"string"},{"name":"door_model","type":"string"},{"name":"wheel_model","type":"string"},{"name":"wheel_size","type":"uint256"},{"name":"tyre_model","type":"string"},{"name":"tyre_size","type":"uint256"},{"name":"paint_colour","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"id","type":"uint256"},{"name":"tax","type":"string"}],"name":"pushTaxHistory","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_car_name","type":"string"},{"name":"_door_model","type":"string"},{"name":"_wheel_model","type":"string"},{"name":"_wheel_size","type":"uint256"},{"name":"_tyre_model","type":"string"},{"name":"_tyre_size","type":"uint256"},{"name":"_paint_colour","type":"string"}],"name":"pushParts","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"uint256"}],"name":"transaction_mapping","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"incrementVehicleID","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getVehicleID","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"user_address","type":"address"}],"name":"getTransaction","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"id","type":"uint256"}],"name":"getInsuranceArray","outputs":[{"components":[{"name":"id","type":"uint256"},{"name":"manufacturer","type":"string"},{"name":"dealership","type":"string"},{"name":"customer","type":"string"},{"name":"insurance_history","type":"string[]"},{"name":"tax_history","type":"string[]"}],"name":"","type":"tuple"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"creds_mapping","outputs":[{"name":"id","type":"uint256"},{"name":"manufacturer","type":"string"},{"name":"dealership","type":"string"},{"name":"customer","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_manufacturer","type":"string"},{"name":"_dealer","type":"string"},{"name":"_customer","type":"string"},{"name":"_insurance_history","type":"string"},{"name":"_tax_history","type":"string"}],"name":"pushCredentials","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"user_address","type":"address"},{"name":"transaction_address","type":"address"}],"name":"setTransaction","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"id","type":"uint256"},{"name":"insurance","type":"string"}],"name":"pushInsuranceHistory","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"id","type":"uint256"},{"indexed":false,"name":"car_name","type":"string"},{"indexed":false,"name":"door_model","type":"string"},{"indexed":false,"name":"wheel_model","type":"string"},{"indexed":false,"name":"wheel_size","type":"uint256"},{"indexed":false,"name":"tyre_model","type":"string"},{"indexed":false,"name":"tyre_size","type":"uint256"},{"indexed":false,"name":"paint_colour","type":"string"}],"name":"PartsCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"id","type":"uint256"},{"indexed":false,"name":"manufacturer","type":"string"},{"indexed":false,"name":"dealership","type":"string"},{"indexed":false,"name":"customer","type":"string"},{"indexed":false,"name":"insurance_history","type":"string[]"},{"indexed":false,"name":"tax_history","type":"string[]"}],"name":"CredentialsCreated","type":"event"}],
-      contactAddress: '0x3586ab333831a232EE509A44fAa5b5D2b4489A4A',
+      account: '0x7a044b7743f4fEFDae4B7e03542F3808DE583D85',
+      contractAbi: [{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"creds_array_mapping","outputs":[{"name":"id","type":"uint256"},{"name":"manufacturer","type":"string"},{"name":"dealership","type":"string"},{"name":"customer","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"parts_mapping","outputs":[{"name":"id","type":"uint256"},{"name":"car_name","type":"string"},{"name":"door_model","type":"string"},{"name":"wheel_model","type":"string"},{"name":"wheel_size","type":"uint256"},{"name":"tyre_model","type":"string"},{"name":"tyre_size","type":"uint256"},{"name":"paint_colour","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"id","type":"uint256"},{"name":"tax","type":"string"}],"name":"pushTaxHistory","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_car_name","type":"string"},{"name":"_door_model","type":"string"},{"name":"_wheel_model","type":"string"},{"name":"_wheel_size","type":"uint256"},{"name":"_tyre_model","type":"string"},{"name":"_tyre_size","type":"uint256"},{"name":"_paint_colour","type":"string"}],"name":"pushParts","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"},{"name":"","type":"uint256"}],"name":"transaction_mapping","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"incrementVehicleID","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getVehicleID","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"user_address","type":"address"}],"name":"getTransaction","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"id","type":"uint256"}],"name":"getInsuranceArray","outputs":[{"components":[{"name":"id","type":"uint256"},{"name":"manufacturer","type":"string"},{"name":"dealership","type":"string"},{"name":"customer","type":"string"},{"name":"insurance_history","type":"string[]"},{"name":"tax_history","type":"string[]"}],"name":"","type":"tuple"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"creds_mapping","outputs":[{"name":"id","type":"uint256"},{"name":"manufacturer","type":"string"},{"name":"dealership","type":"string"},{"name":"customer","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_manufacturer","type":"string"},{"name":"_dealer","type":"string"},{"name":"_customer","type":"string"},{"name":"_insurance_history","type":"string"},{"name":"_tax_history","type":"string"}],"name":"pushCredentials","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"getCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"user_address","type":"address"},{"name":"transaction_address","type":"address"}],"name":"setTransaction","outputs":[{"name":"","type":"address[]"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"id","type":"uint256"},{"name":"insurance","type":"string"}],"name":"pushInsuranceHistory","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"id","type":"uint256"},{"indexed":false,"name":"manufacturer","type":"string"},{"indexed":false,"name":"dealership","type":"string"},{"indexed":false,"name":"customer","type":"string"},{"indexed":false,"name":"insurance_history","type":"string[]"},{"indexed":false,"name":"tax_history","type":"string[]"}],"name":"CredentialsCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"vehicle_id","type":"uint256"},{"indexed":false,"name":"_car_name","type":"string"},{"indexed":false,"name":"_door_model","type":"string"},{"indexed":false,"name":"_wheel_model","type":"string"},{"indexed":false,"name":"_wheel_size","type":"uint256"},{"indexed":false,"name":"_tyre_model","type":"string"},{"indexed":false,"name":"_tyre_size","type":"uint256"},{"indexed":false,"name":"_paint_colour","type":"string"}],"name":"PartsCreated","type":"event"}],
+      contactAddress: '0x503205d060E65d8AE8096540D0905295dA9b1781',
       balance: 0,
       networkId: 5777,
       count: 0,
       loading: true,
       list: [],
       credentials_list: [],
+      owned_parts: [],
+      owned_credentials: [],
+      owned_count: 0
     }
 
     this.pushParts = this.pushParts.bind(this);
@@ -106,24 +136,24 @@ class App extends Component {
       });
   }
 
-  pushCredentials(insurance_history, tax_history) {
+  pushCredentials(manufacturer, dealership, customer, insurance_history, tax_history) {
     var manufacturer = this.state.account;
 
     this.setState({ loading: true });
-    this.state.autoBit.methods.pushCredentials(manufacturer.toString(), "", "", insurance_history, tax_history).send({ from: this.state.account })
+    this.state.autoBit.methods.pushCredentials(manufacturer.toString(), dealership, customer, insurance_history, tax_history).send({ from: this.state.account })
       .once('receipt', (receipt) => {
         this.setState({ loading: false });
         console.log(receipt);
-        // window.location.reload();
+        window.location.reload();
       });
   }
 
   render() {
     return (
+      <NavigationBar loading={ this.state.loading } balance={ this.state.balance } account={ this.state.account } list={ this.state.list } credentials_list={ this.state.credentials_list } 
+              owned_parts = { this.state.owned_parts } owned_credentials = { this.state.owned_credentials } owned_count={ this.state.owned_count } pushParts={ this.pushParts } pushCredentials={ this.pushCredentials } count={ this.state.count } >
         <div className="container-fluid">
           <div className="row">
-            <NavigationBar balance={ this.state.balance } account={ this.state.account } list={ this.state.list } credentials_list={ this.state.credentials_list } 
-              pushParts={ this.pushParts } pushCredentials={ this.pushCredentials } count={this.state.count}/>
             <main role="main" className="col-lg-12 d-flex text-center">
               <div className="content mr-auto ml-auto" style={{paddingTop: 8 + 'em'}}>
                   
@@ -139,6 +169,7 @@ class App extends Component {
             </main>
           </div>
         </div>
+      </NavigationBar>
     );
   }
 }

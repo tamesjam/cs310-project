@@ -4,6 +4,8 @@ import { Navbar, Nav, NavDropdown, Form, FormControl, Buttton} from 'react-boots
 import Login from './Login.js';
 import Home from './Home.js';
 import Account from './Account.js';
+import Transfer from './Transfer.js';
+import Data from './Data.js';
 
 class NavigationBar extends Component {
   render() {
@@ -19,8 +21,8 @@ class NavigationBar extends Component {
               <Nav.Link as={Link} to={"/register"} class="w3-bar-item w3-button">Register</Nav.Link>
               <Nav.Link as={Link} to={"/login"} class="w3-bar-item w3-button">Login</Nav.Link>
               <Nav.Link as={Link} to={"/account"} class="w3-bar-item w3-button">Account</Nav.Link>
-              <Nav.Link as={Link} to={"/team"} class="w3-bar-item w3-button">Team</Nav.Link>
-              <Nav.Link as={Link} to={"/work"} class="w3-bar-item w3-button">Work</Nav.Link>
+              <Nav.Link as={Link} to={"/transfer"} class="w3-bar-item w3-button">Transfer</Nav.Link>
+              <Nav.Link as={Link} to={"/data"} class="w3-bar-item w3-button">Transactions</Nav.Link>
               <Nav.Link as={Link} to={"/contact"} class="w3-bar-item w3-button">Contact</Nav.Link>
             </Nav>
             </div>
@@ -32,9 +34,13 @@ class NavigationBar extends Component {
         </div>
         <Routes>
           <Route path="/" name="Home" element={<Home /> } />
-          <Route path="/login" element={<Login/> } />
+          <Route path="/login" element={<Login/> } loading={this.props.loading } />
           <Route path="/account" element={<Account list={ this.props.list } credentials_list={ this.props.credentials_list } 
-            pushParts={ this.props.pushParts } pushCredentials={ this.props.pushCredentials } count={this.props.count}/> } />
+            pushParts={ this.props.pushParts } pushCredentials={ this.props.pushCredentials } count={ this.props.count } loading={this.props.loading } /> } />
+          <Route path="/transfer" element={<Transfer list={ this.props.list } credentials_list={ this.props.credentials_list } 
+            pushParts={ this.props.pushParts } pushCredentials={ this.props.pushCredentials } count={this.props.count} loading={this.props.loading }/> } />
+          <Route path="/data" element={<Data loading={this.props.loading } list={ this.props.list } credentials_list={ this.props.credentials_list } 
+            owned_parts={ this.props.owned_parts } owned_credentials={ this.props.owned_credentials } owned_count={ this.props.owned_count }/> } />
         </Routes>
       </Router>
     )
